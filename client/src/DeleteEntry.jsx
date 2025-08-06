@@ -11,7 +11,7 @@ const DeleteEntries = ({ userRole }) => {
 
   useEffect(() => {
     fetchData();
-  }, [selectedTable]);
+  }, [selectedTable , fetchData]);
 
   const fetchData = async () => {
     try {
