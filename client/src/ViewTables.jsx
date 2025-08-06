@@ -43,7 +43,7 @@ const ViewTables = () => {
 
   const fetchTableData = async (tableName) => {
     try {
-      const res = await axios.get(`http://localhost:8888/api/tables/${tableName}`);
+      const res = await axios.get(`https://first-project-hsch.onrender.com/api/tables/${tableName}`);
       if (Array.isArray(res.data)) {
         setTableData(res.data);
       } else {

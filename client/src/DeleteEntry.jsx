@@ -15,7 +15,7 @@ const DeleteEntries = ({ userRole }) => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`http://localhost:8888/api/tables/${selectedTable}`);
+      const res = await axios.get(`https://first-project-hsch.onrender.com/api/tables/${selectedTable}`);
       setEntries(res.data || []);
       setSelectedIds([]);
     } catch (error) {
@@ -34,7 +34,7 @@ const DeleteEntries = ({ userRole }) => {
     if (!selectedIds.length) return alert("Select at least one entry to delete.");
 
     try {
-      await axios.post(`http://localhost:8888/api/delete`, {
+      await axios.post(`https://first-project-hsch.onrender.com/api/delete`, {
         table: selectedTable,
         ids: selectedIds,
       });
@@ -47,7 +47,7 @@ const DeleteEntries = ({ userRole }) => {
 
   const handleSingleDelete = async (id) => {
     try {
-      await axios.post(`http://localhost:8888/api/delete`, {
+      await axios.post(`https://first-project-hsch.onrender.com/api/delete`, {
         table: selectedTable,
         ids: [id],
       });

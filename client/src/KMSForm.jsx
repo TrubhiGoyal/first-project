@@ -24,7 +24,7 @@ const KMSForm = ({ onCancel }) => {
   const [dropdowns, setDropdowns] = useState({ vehicles: [], custodians: [], drivers: [], branches: [] });
 
   useEffect(() => {
-    axios.get("http://localhost:8888/api/dropdowns")
+    axios.get("https://first-project-hsch.onrender.com/api/dropdowns")
       .then(res => setDropdowns(res.data))
       .catch(err => console.error("Dropdown load error:", err));
   }, []);
@@ -75,7 +75,7 @@ const KMSForm = ({ onCancel }) => {
       const tripId = entry.trip_id;
       if (!tripId) return alert("Trip ID is missing.");
 
-      const res = await axios.get(`http://localhost:8888/api/kms-report/count?trip_id=${tripId}`);
+      const res = await axios.get(`https://first-project-hsch.onrender.com/api/kms-report/count?trip_id=${tripId}`);
       const currentCount = res.data.count || 0;
       const newCount = currentCount + entry.branches.filter(b => b.branch_name).length;
 
@@ -108,7 +108,7 @@ const KMSForm = ({ onCancel }) => {
           transaction_id: `${entry.trip_id}/${b.sol_id}`
         }));
 
-      await axios.post("http://localhost:8888/api/kms-report/bulk", rows);
+      await axios.post("https://first-project-hsch.onrender.com/api/kms-report/bulk", rows);
       alert("KMS entries saved successfully.");
       resetForm();
     } catch (error) {

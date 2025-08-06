@@ -108,7 +108,7 @@ const handleSubmit = async () => {
       uploadFormData.append("table", selectedTable);
 
       const response = await axios.put(
-        "http://localhost:8888/api/upload-file",
+        "https://first-project-hsch.onrender.com/api/upload-file",
         uploadFormData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -148,7 +148,7 @@ const handleSubmit = async () => {
   }
 
   try {
-    const response = await axios.post("http://localhost:8888/api/add-entry", {
+    const response = await axios.post("https://first-project-hsch.onrender.com/api/add-entry", {
       table: selectedTable,
       data: formData,
     });
