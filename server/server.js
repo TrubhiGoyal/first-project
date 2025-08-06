@@ -42,7 +42,7 @@ const UNIQUE_COLUMNS = {
 const Models = {
   add_user: User,
   vehicle: Vehicle,
-  branch: mongoose.model("Branch", require("./models/branch.model")),
+  branch: Branch,
   custodian: Custodian,
   driver: Driver,
   kms_report: KmsReport,
