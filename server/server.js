@@ -25,10 +25,10 @@ db.once("open", () => console.log("✅ Connected to MongoDB"));
 
 // Mongoose Models
 const User = require("./models/add_user");
-const Vehicle = require("./models/Vehicle");
-const Branch = require("./models/Branch");
-const Custodian = require("./models/Custodian");
-const Driver = require("./models/Driver");
+const Vehicle = require("./models/vehicle");
+const Branch = require("./models/branch");
+const Custodian = require("./models/custodian");
+const Driver = require("./models/driver");
 const KmsReport = require("./models/kms_report.models");
 
 const UNIQUE_COLUMNS = {
@@ -193,10 +193,10 @@ app.post("/api/upload-file", upload.single("file"), async (req, res) => {
 
 app.get("/api/dropdowns", async (req, res) => {
   try {
-    const Vehicle = require("./models/Vehicle");
-    const Custodian = require("./models/Custodian");
-    const Driver = require("./models/Driver");
-    const Branch = require("./models/Branch");
+    const Vehicle = require("./models/vehicle");
+    const Custodian = require("./models/custodian");
+    const Driver = require("./models/driver");
+    const Branch = require("./models/branch");
 
     const vehicles = await Vehicle.find().select("name -_id").lean();
     const custodians = await Custodian.find().select("name -_id").lean();
