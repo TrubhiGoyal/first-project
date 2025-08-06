@@ -16,7 +16,7 @@ const Registration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8888/api/data/user", formData);
+      const res = await axios.post("https://first-project-hsch.onrender.com/api/data/user", formData);
       alert("User registered successfully");
       setFormData({ name: "", email: "", password: "" });
     } catch (err) {
