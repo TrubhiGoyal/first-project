@@ -1,5 +1,4 @@
-// src/components/DeleteEntries.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
 const DeleteEntries = ({ userRole }) => {
@@ -9,11 +8,7 @@ const DeleteEntries = ({ userRole }) => {
 
   const TABLE_OPTIONS = ["user", "vehicle", "custodian", "driver", "branch"];
 
-  useEffect(() => {
-    fetchData();
-  }, [selectedTable , fetchData]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const res = await axios.get(`https://first-project-hsch.onrender.com/api/tables/${selectedTable}`);
       setEntries(res.data || []);
@@ -22,7 +17,11 @@ const DeleteEntries = ({ userRole }) => {
       console.error("Failed to fetch data:", error);
       setEntries([]);
     }
-  };
+  }, [selectedTable]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleCheckboxChange = (id) => {
     setSelectedIds((prev) =>
