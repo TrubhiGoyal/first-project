@@ -73,7 +73,7 @@ const KMSForm = ({ onCancel }) => {
   };
 
   const resetForm = () => {
-    setEntry({ ...defaultEntry, data_entry_date: formatDateToDDMMYYYY(new Date()), activity_date : formatDateToDDMMYYYY(activity_date) });
+    setEntry({ ...defaultEntry, data_entry_date: formatDateToDDMMYYYY(new Date()), activity_date : formatDateToDDMMYYYY(entry.activity_date) });
   };
 
   const handleSave = async () => {
