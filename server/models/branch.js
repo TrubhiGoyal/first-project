@@ -13,4 +13,4 @@ const BranchSchema = new mongoose.Schema({
   bank_name: { type: String }
 }, { collection: "branch2" });
 
-module.exports = mongoose.model("Branch", BranchSchema);
+module.exports = mongoose.model("Branch", BranchSchema ,"branch2");

@@ -271,7 +271,7 @@ app.get("/api/tables/:name", async (req, res) => {
 
   const collectionMap = {
     user: "add_user",
-    branch: "branch",
+    branch: "branch2",
     vehicle: "vehicle",
     custodian: "custodian",
     driver: "driver",
