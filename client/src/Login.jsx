@@ -7,7 +7,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const onSubmit = (data) => {
-    fetch("http://localhost:8888/api/login", {
+    fetch("https://first-project-hsch.onrender.com/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
