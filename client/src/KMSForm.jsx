@@ -18,6 +18,12 @@ const defaultEntry = {
   trip_kms: "",
   remarks: "",
 };
+function formatDateToDDMMYYYY(date) {
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+}
 
 const KMSForm = ({ onCancel }) => {
   const [entry, setEntry] = useState({ ...defaultEntry });
@@ -67,7 +73,7 @@ const KMSForm = ({ onCancel }) => {
   };
 
   const resetForm = () => {
-    setEntry({ ...defaultEntry, data_entry_date: new Date().toLocaleDateString("en-GB") });
+    setEntry({ ...defaultEntry, data_entry_date: formatDateToDDMMYYYY(new Date()) });
   };
 
   const handleSave = async () => {

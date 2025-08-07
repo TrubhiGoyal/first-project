@@ -48,11 +48,14 @@ const Models = {
   kms_report: KmsReport,
 };
 
-function convertToDate(ddmmyyyy) {
-  if (!ddmmyyyy || typeof ddmmyyyy !== 'string') return null;
-  const [dd, mm, yyyy] = ddmmyyyy.split("-");
+function convertToDate(value) {
+  if (!value) return null;
+  const match = value.match(/(\d{2})[-\/](\d{2})[-\/](\d{4})/);
+  if (!match) return null;
+  const [, dd, mm, yyyy] = match;
   return new Date(`${yyyy}-${mm}-${dd}`);
 }
+
 
 function formatDatesInObject(obj) {
   const formatted = { ...obj };
