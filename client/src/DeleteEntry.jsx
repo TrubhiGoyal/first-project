@@ -10,7 +10,9 @@ const DeleteEntries = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await axios.get(`https://first-project-hsch.onrender.com/api/tables/${selectedTable}`);
+      const res = await axios.get(
+        `https://first-project-hsch.onrender.com/api/tables/${selectedTable}`
+      );
       setEntries(res.data || []);
       setSelectedIds([]);
     } catch (error) {
@@ -31,6 +33,7 @@ const DeleteEntries = () => {
 
   const handleBulkDelete = async () => {
     if (!selectedIds.length) return alert("Select at least one entry to delete.");
+    if (!window.confirm("Are you sure you want to delete selected entries?")) return;
 
     try {
       await axios.post(`https://first-project-hsch.onrender.com/api/delete`, {
@@ -41,10 +44,13 @@ const DeleteEntries = () => {
       fetchData();
     } catch (err) {
       console.error("Delete failed:", err);
+      alert("Failed to delete entries.");
     }
   };
 
   const handleSingleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this entry?")) return;
+
     try {
       await axios.post(`https://first-project-hsch.onrender.com/api/delete`, {
         table: selectedTable,
@@ -54,12 +60,19 @@ const DeleteEntries = () => {
       fetchData();
     } catch (err) {
       console.error("Delete failed:", err);
+      alert("Failed to delete entry.");
     }
   };
 
-  if (!["admin", "manager"].includes(userRole?.toLowerCase())) {
-    return <div className="p-4 text-red-600 font-semibold">Access Denied</div>;
-  }
+  const getDisplayName = (entry) => {
+    return (
+      entry.name ||
+      entry.branch_name ||
+      entry.email ||
+      entry.id ||
+      "-"
+    );
+  };
 
   return (
     <div className="p-6 space-y-4">
@@ -90,7 +103,15 @@ const DeleteEntries = () => {
       <table className="min-w-full mt-4 border text-sm">
         <thead className="bg-gray-100">
           <tr>
-            <th className="p-2 border"><input type="checkbox" disabled /></th>
+            <th className="p-2 border text-center">
+              <input
+                type="checkbox"
+                checked={selectedIds.length === entries.length && entries.length > 0}
+                onChange={(e) =>
+                  setSelectedIds(e.target.checked ? entries.map((x) => x._id) : [])
+                }
+              />
+            </th>
             <th className="p-2 border">ID</th>
             <th className="p-2 border">Name</th>
             <th className="p-2 border">Action</th>
@@ -114,7 +135,7 @@ const DeleteEntries = () => {
                   />
                 </td>
                 <td className="p-2 border">{entry._id}</td>
-                <td className="p-2 border">{entry.name || entry.email || entry.id || "-"}</td>
+                <td className="p-2 border">{getDisplayName(entry)}</td>
                 <td className="p-2 border text-center">
                   <button
                     onClick={() => handleSingleDelete(entry._id)}
