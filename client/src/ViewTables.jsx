@@ -32,7 +32,9 @@ const FIELD_ORDER = {
 // Helper function to safely format "dd-mm-yyyy" date strings
 const formatDate = (dateStr) => {
   if (!dateStr || typeof dateStr !== "string") return "";
-  const [day, month, year] = dateStr.split("-");
+  const day = new Date(dateStr).getDate();
+  const month = new Date(dateStr).getMonth() + 1; // Months are zero-based
+  const year = new Date(dateStr).getFullYear();
   if (!day || !month || !year) return "";
   return `${day}-${month}-${year}`;
 };

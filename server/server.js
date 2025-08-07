@@ -254,15 +254,32 @@ app.get("/api/kms-report/count", async (req, res) => {
 });
 app.post("/api/delete", async (req, res) => {
   const { table, ids } = req.body;
+
+  // ✅ Validate inputs
+  if (!table || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: "Table and IDs are required" });
+  }
+
+  // ✅ Allowed collections safeguard
+  const allowedCollections = ["vehicle", "custodian", "driver", "branch", "add_user", "kms_report", "activity_report"];
+  if (!allowedCollections.includes(table)) {
+    return res.status(403).json({ error: "Unauthorized collection" });
+  }
+
   try {
     const collection = mongoose.connection.collection(table);
-    await collection.deleteMany({ _id: { $in: ids.map((id) => new mongoose.Types.ObjectId(id)) } });
-    res.status(200).send("Deleted successfully");
+
+    // ✅ Convert to ObjectId
+    const objectIds = ids.map((id) => new mongoose.Types.ObjectId(id));
+
+    const result = await collection.deleteMany({ _id: { $in: objectIds } });
+
+    res.status(200).json({ message: "Deleted successfully", deletedCount: result.deletedCount });
   } catch (err) {
+    console.error("Delete error:", err);
     res.status(500).json({ error: "Failed to delete entries" });
   }
 });
-
 
 
 

@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const KMSReportSchema = new mongoose.Schema({
-  data_entry_date: String,
+  data_entry_date: { type: Date },
   vehicle_id: String,
-  activity_date: String,
+  activity_date: { type: Date },
   trip_id: String,
   custodian_name: String,
   driver_name: String,

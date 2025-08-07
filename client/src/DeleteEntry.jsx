@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
-const DeleteEntries = ({ userRole }) => {
+const DeleteEntries = () => {
   const [selectedTable, setSelectedTable] = useState("vehicle");
   const [entries, setEntries] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);

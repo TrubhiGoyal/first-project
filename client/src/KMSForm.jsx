@@ -202,11 +202,11 @@ const KMSForm = ({ onCancel }) => {
         </div>
         <div>
           <label>Start KM</label>
-          <input type="number" value={entry.trip_opening_kms} onChange={(e) => handleChange("trip_opening_kms", e.target.value)} />
+          <input type="number" value={entry.trip_opening_kms} onChange={(e) => handleChange("trip_opening_kms", Number(e.target.value) || 0)} />
         </div>
         <div>
           <label>End KM</label>
-          <input type="number" value={entry.trip_closing_kms} onChange={(e) => handleChange("trip_closing_kms", e.target.value)} />
+          <input type="number" value={entry.trip_closing_kms} onChange={(e) => handleChange("trip_closing_kms", Number(e.target.value) || 0)} />
         </div>
         <div>
           <label>Total KM</label>
