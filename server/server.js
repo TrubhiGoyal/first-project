@@ -26,7 +26,7 @@ db.once("open", () => console.log("✅ Connected to MongoDB"));
 // Mongoose Models
 const User = require("./models/add_user");
 const Vehicle = require("./models/vehicle");
-const Branch = require("./models/branch");
+const Branch = require("./models/branch2");
 const Custodian = require("./models/custodian");
 const Driver = require("./models/driver");
 const KmsReport = require("./models/kms_report.models");
@@ -205,7 +205,7 @@ app.get("/api/dropdowns", async (req, res) => {
 
     // ✅ Map branch data to the format expected by KMSForm.jsx
     const branches = branchesRaw.map(b => ({
-      sol_id: b.id,
+      sol_id: b.sol_id,
       branch_name: b.branch_name,
       cluster: b.city,
       circle: b.circle,
