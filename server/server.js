@@ -26,7 +26,7 @@ db.once("open", () => console.log("✅ Connected to MongoDB"));
 // Mongoose Models
 const User = require("./models/add_user");
 const Vehicle = require("./models/vehicle");
-const Branch = require("./models/branch2");
+const Branch = require("./models/branch");
 const Custodian = require("./models/custodian");
 const Driver = require("./models/driver");
 const KmsReport = require("./models/kms_report.models");
