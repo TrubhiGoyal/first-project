@@ -198,7 +198,7 @@ const KMSForm = ({ onCancel }) => {
         </div>
         <div>
           <label>Empty Boxes Delivered</label>
-          <input type="number" value={entry.trip_empty_boxes_delivered_count} onChange={(e) => handleChange("trip_empty_boxes_delivered_count", e.target.value)} />
+          <input type="number" value={entry.trip_empty_boxes_delivered_count} onChange={(e) => handleChange("trip_empty_boxes_delivered_count", Number(e.target.value) || 0)} />
         </div>
         <div>
           <label>Start KM</label>
