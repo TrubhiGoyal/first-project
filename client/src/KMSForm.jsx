@@ -198,15 +198,15 @@ const KMSForm = ({ onCancel }) => {
         </div>
         <div>
           <label>Empty Boxes Delivered</label>
-          <input type="number" value={entry.trip_empty_boxes_delivered_count} onChange={(e) => handleChange("trip_empty_boxes_delivered_count", Number(e.target.value) || 0)} />
+          <input type="number" value={entry.trip_empty_boxes_delivered_count} onChange={(e) => handleChange("trip_empty_boxes_delivered_count", e.target.value)} />
         </div>
         <div>
           <label>Start KM</label>
-          <input type="number" value={entry.trip_opening_kms} onChange={(e) => handleChange("trip_opening_kms", Number(e.target.value) || 0)} />
+          <input type="number" value={entry.trip_opening_kms} onChange={(e) => handleChange("trip_opening_kms", e.target.value)} />
         </div>
         <div>
           <label>End KM</label>
-          <input type="number" value={entry.trip_closing_kms} onChange={(e) => handleChange("trip_closing_kms", Number(e.target.value) || 0)} />
+          <input type="number" value={entry.trip_closing_kms} onChange={(e) => handleChange("trip_closing_kms", e.target.value)} />
         </div>
         <div>
           <label>Total KM</label>
