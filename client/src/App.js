@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import Login from './Login';
 import Register from './Registration';
 import HomePage from './HomePage';
+import HomeButton from './HomeButton'; 
 import AddTable from './AddTable';
 import DeleteEntry from './DeleteEntry';
 import KMSForm from './KMSForm';
@@ -30,6 +31,7 @@ function Navigation() {
 function AppRoutes() {
   return (
     <>
+      <HomeButton />
       <Navigation />
       <Routes>
         <Route path="/login" element={<Login />} />

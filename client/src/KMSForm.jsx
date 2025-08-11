@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const defaultEntry = {
-  data_entry_date: new Date().toLocaleDateString("en-GB"),
+  data_entry_date: new Date().toISOString().slice(0, 10),
   vehicle_id: "",
   activity_date: "",
   trip_id: "",
@@ -18,12 +18,17 @@ const defaultEntry = {
   trip_kms: "",
   remarks: "",
 };
-function formatDateToDDMMYYYY(date) {
-  const dd = String(date.getDate()).padStart(2, '0');
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const yyyy = date.getFullYear();
-  return `${dd}-${mm}-${yyyy}`;
+function formatDateToDDMMYYYY(isoDateStr) {
+  if (!isoDateStr) return "";
+  // Expected input: "yyyy-mm-dd"
+  const [year, month, day] = isoDateStr.split("-");
+  if (!year || !month || !day) return "";
+  return `${day}-${month}-${year}`;
 }
+
+
+  // If it's a string (like "2025-08-10")
+  
 
 const KMSForm = ({ onCancel }) => {
   const [entry, setEntry] = useState({ ...defaultEntry });
@@ -73,7 +78,7 @@ const KMSForm = ({ onCancel }) => {
   };
 
   const resetForm = () => {
-    setEntry({ ...defaultEntry, data_entry_date: formatDateToDDMMYYYY(new Date()), activity_date : formatDateToDDMMYYYY(entry.activity_date) });
+    setEntry({ ...defaultEntry, data_entry_date: new Date().toISOString().slice(0, 10),activity_date: entry.activity_date || "", });
   };
 
   const handleSave = async () => {
@@ -115,12 +120,25 @@ const KMSForm = ({ onCancel }) => {
         }));
 
       await axios.post("https://first-project-hsch.onrender.com/api/kms-report/bulk", rows);
-      alert("KMS entries saved successfully.");
+      if (res.data.success) {
+      const ids = res.data.insertedIds || [];
+      alert(`Saved ${res.data.inserted_count} entries successfully.\nInserted IDs:\n${ids.join("\n")}`);
       resetForm();
-    } catch (error) {
-      console.error("Save failed:", error);
-      alert("Failed to save.");
+    } else {
+      alert("Failed to save entries. Please try again.");
     }
+  } catch (error) {
+    console.error("Save failed:", error);
+
+    let message = "Failed to save.";
+    if (error.response && error.response.data && error.response.data.message) {
+      message = error.response.data.message;
+    } else if (error.message) {
+      message = error.message;
+    }
+
+    alert(message);
+  }
   };
 
   return (

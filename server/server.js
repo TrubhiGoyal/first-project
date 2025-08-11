@@ -30,13 +30,19 @@ const Branch = require("./models/branch");
 const Custodian = require("./models/custodian");
 const Driver = require("./models/driver");
 const KmsReport = require("./models/kms_report.models");
-
+const Cluster = require("./models/cluster");
+const Circle = require("./models/circle");
+const Client = require("./models/client");
+const { default: cluster } = require("cluster");
 const UNIQUE_COLUMNS = {
   add_user: ["email", "name"],
   vehicle: ["name"],
   custodian: ["name"],
   driver: ["name"],
-  branch: ["sol_id", "branch_name"]
+  branch: ["sol_id", "branch_name"],
+  cluster : ["name", "circleId"],
+  circle: ["name", "clientId"],
+  client: ["name"]
 };
 
 const Models = {
@@ -46,7 +52,11 @@ const Models = {
   custodian: Custodian,
   driver: Driver,
   kms_report: KmsReport,
+  cluster: Cluster,
+  circle: Circle,
+  client: Client, 
 };
+
 
 function convertToDate(value) {
   if (!value) return null;
@@ -56,20 +66,141 @@ function convertToDate(value) {
   return new Date(`${yyyy}-${mm}-${dd}`);
 }
 
-
 function formatDatesInObject(obj) {
   const formatted = { ...obj };
   for (let k in formatted) {
     if (k.toLowerCase().includes("date") && formatted[k]) {
       const d = new Date(formatted[k]);
       if (!isNaN(d)) {
-        formatted[k] = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+        formatted[k] = `${String(d.getDate()).padStart(2, "0")}-${String(
+          d.getMonth() + 1
+        ).padStart(2, "0")}-${d.getFullYear()}`;
       }
     }
   }
   return formatted;
 }
 
+app.get("/api/tables/client", async (req, res) => {
+  try {
+    const clients = await Client.find().sort({ name: 1 });
+    res.json(clients);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching clients" });
+  }
+});
+
+// GET circles filtered by client
+app.get("/api/tables/circle", async (req, res) => {
+  try {
+    const { clientId } = req.query;
+    const filter = clientId ? { client: clientId } : {};
+    const circles = await Circle.find(filter).sort({ name: 1 });
+    res.json(circles);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching circles" });
+  }
+});
+
+// GET clusters filtered by circle
+app.get("/api/tables/cluster", async (req, res) => {
+  try {
+    const { circleId } = req.query;
+    const filter = circleId ? { circle: circleId } : {};
+    const clusters = await Cluster.find(filter).sort({ name: 1 });
+    res.json(clusters);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching clusters" });
+  }
+});
+
+// POST add client
+app.post("/api/tables/client", async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: "Client name is required" });
+
+    const exists = await Client.findOne({ name: name.trim() });
+    if (exists) return res.status(409).json({ message: "Client already exists" });
+
+    const client = new Client({ name: name.trim() });
+    await client.save();
+    res.status(201).json({ success: true, client });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to add client" });
+  }
+});
+
+// POST add circle with client reference
+app.post("/api/tables/circle", async (req, res) => {
+  try {
+    const { name, client } = req.body; // client = clientId
+    if (!name || !client)
+      return res.status(400).json({ message: "Circle name and Client are required" });
+
+    const exists = await Circle.findOne({ name: name.trim(), client });
+    if (exists) return res.status(409).json({ message: "Circle already exists" });
+
+    const circle = new Circle({ name: name.trim(), client });
+    await circle.save();
+    res.status(201).json({ success: true, circle });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to add circle" });
+  }
+});
+
+// POST add cluster with circle reference
+app.post("/api/tables/cluster", async (req, res) => {
+  try {
+    const { name, circle } = req.body; // circle = circleId
+    if (!name || !circle)
+      return res.status(400).json({ message: "Cluster name and Circle are required" });
+
+    const exists = await Cluster.findOne({ name: name.trim(), circle });
+    if (exists) return res.status(409).json({ message: "Cluster already exists" });
+
+    const cluster = new Cluster({ name: name.trim(), circle });
+    await cluster.save();
+    res.status(201).json({ success: true, cluster });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to add cluster" });
+  }
+});
+
+// POST add branch with cluster reference
+app.post("/api/tables/branch", async (req, res) => {
+  try {
+    const { sol_id, branch_name, cluster } = req.body;
+    if (!sol_id || !branch_name || !cluster) {
+      return res.status(400).json({ message: "Sol ID, Branch Name, and Cluster are required" });
+    }
+
+    // Duplicate check on sol_id and branch_name independently
+    const duplicateSolId = await Branch.findOne({ sol_id: sol_id.trim() });
+    const duplicateBranchName = await Branch.findOne({ branch_name: branch_name.trim() });
+
+    if (duplicateSolId || duplicateBranchName) {
+      const errors = {};
+      if (duplicateSolId) errors.sol_id = "Sol ID already exists";
+      if (duplicateBranchName) errors.branch_name = "Branch Name already exists";
+      return res.status(409).json({ message: "Duplicate entry", errors });
+    }
+
+    const branch = new Branch({ sol_id: sol_id.trim(), branch_name: branch_name.trim(), cluster });
+    await branch.save();
+
+    res.status(201).json({ success: true, branch });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to add branch" });
+  }
+});
 app.post("/api/add-user", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -83,6 +214,9 @@ app.post("/api/add-user", async (req, res) => {
   }
 });
 
+
+
+
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -94,6 +228,7 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// POST add cluster
 
 app.post("/api/add-entry", async (req, res) => {
   try {
@@ -104,6 +239,18 @@ app.post("/api/add-entry", async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid table name" });
     }
 
+    // Validate required parent fields for circle and cluster
+    if (table === "circle") {
+      if (!data.client) {
+        return res.status(400).json({ success: false, message: "Client is required for circle." });
+      }
+    }
+    if (table === "cluster") {
+      if (!data.circle) {
+        return res.status(400).json({ success: false, message: "Circle is required for cluster." });
+      }
+    }
+
     // Check for duplicate fields (if needed)
     const uniqueFields = {
       user: ["email"],
@@ -111,6 +258,9 @@ app.post("/api/add-entry", async (req, res) => {
       driver: ["name"],
       custodian: ["name"],
       branch: ["id"],
+      circle: ["name"],   // add uniqueness on name for circle
+      cluster: ["name"],  // add uniqueness on name for cluster
+      client: ["name"],   // optionally for client too
     };
 
     const filters = {};
@@ -135,6 +285,7 @@ app.post("/api/add-entry", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 const upload = multer({ dest: "uploads/" });
@@ -237,7 +388,7 @@ app.post("/api/kms-report/bulk", async (req, res) => {
       
     }));
     const inserted = await KmsReport.insertMany(entries);
-    res.json({ success: true, inserted_count: inserted.length });
+    res.json({ success: true, inserted_count: inserted.length, insertedIds: inserted.map(doc => doc._id) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -286,10 +437,16 @@ app.post("/api/delete", async (req, res) => {
 
 
 
-app.get("/api/tables/:name", async (req, res) => {
-  const { name } = req.params;
 
-  const collectionMap = {
+
+  // Map route param to Mongoose model or collection name
+  
+  app.get("/api/tables/:name", async (req, res) => {
+  const { name } = req.params;
+const collectionMap = {
+    cluster: "clusters",
+    circle: "circles",
+    client: "clients",
     user: "add_user",
     branch: "branch2",
     vehicle: "vehicle",
@@ -299,11 +456,41 @@ app.get("/api/tables/:name", async (req, res) => {
     activity_report: "activity_report"
   };
 
-  const collectionName = collectionMap[name];
-  if (!collectionName) return res.status(400).json({ error: "Invalid table name" });
+  const ModelMap = {
+    cluster: require("./models/cluster"),
+    circle: require("./models/circle"),
+    client: require("./models/client"),
+    user: require("./models/add_user"),
+    branch: require("./models/branch"),
+    vehicle: require("./models/vehicle"),
+    custodian: require("./models/custodian"),
+    driver: require("./models/driver"),
+    kms_report: require("./models/kms_report.models"),
+    
+  };
+
+  const Model = ModelMap[name];
+  if (!Model) return res.status(400).json({ error: "Invalid table name" });
 
   try {
-    const data = await mongoose.connection.collection(collectionName).find({}).toArray();
+    let data;
+
+    if (name === "circle") {
+      data = await Model.find().populate("client", "name").lean();
+    } else if (name === "cluster") {
+      data = await Model.find()
+        .populate({
+          path: "circle",
+          select: "name client",
+          populate: { path: "client", select: "name" },
+        })
+        .lean();
+    } else if (name === "client") {
+      data = await Model.find().lean();
+    } else {
+      data = await Model.find().lean();
+    }
+
     res.json(data);
   } catch (err) {
     console.error("Error fetching table:", err);

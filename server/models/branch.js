@@ -1,16 +1,10 @@
-const mongoose = require("mongoose");
+// Branch schema
+const mongoose = require('mongoose');
 
 const BranchSchema = new mongoose.Schema({
- sol_id: {
-  type: String,
-  required: true,
-  unique: true,
-  sparse: true // <- Add this
-},
-  branch_name: { type: String, required: true ,},
-  city: { type: String, required: true },
-  circle: { type: String },
-  bank_name: { type: String }
-}, { collection: "branch2" });
+  sol_id: { type: String, unique: true, required: true, trim: true },
+  branch_name: { type: String, unique: true, required: true, trim: true },
+  cluster: { type: mongoose.Schema.Types.ObjectId, ref: 'Cluster', required: true }
+});
 
-module.exports = mongoose.model("Branch", BranchSchema ,"branch2");
+module.exports = mongoose.model('Branch', BranchSchema);
