@@ -18,13 +18,7 @@ const defaultEntry = {
   trip_kms: "",
   remarks: "",
 };
-function formatDateToDDMMYYYY(isoDateStr) {
-  if (!isoDateStr) return "";
-  // Expected input: "yyyy-mm-dd"
-  const [year, month, day] = isoDateStr.split("-");
-  if (!year || !month || !day) return "";
-  return `${day}-${month}-${year}`;
-}
+
 
 
   // If it's a string (like "2025-08-10")
