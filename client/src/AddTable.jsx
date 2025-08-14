@@ -17,7 +17,7 @@ const AddTable = () => {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const clientRes = await axios.get("http://localhost:8888/api/tables/client");
+        const clientRes = await axios.get("https://first-project-hsch.onrender.com/api/tables/client");
         setClients(clientRes.data || []);
       } catch (error) {
         console.error("Error fetching clients:", error);
@@ -36,7 +36,7 @@ const AddTable = () => {
       }
       try {
         const circleRes = await axios.get(
-          `http://localhost:8888/api/tables/circle?clientId=${formData.client}`
+          `https://first-project-hsch.onrender.com/api/tables/circle?clientId=${formData.client}`
         );
         setCircles(circleRes.data || []);
         setFormData((prev) => ({ ...prev, circle: "" }));
@@ -60,7 +60,7 @@ const AddTable = () => {
       }
       try {
         const clusterRes = await axios.get(
-          `http://localhost:8888/api/tables/cluster?circleId=${formData.circle}`
+          `https://first-project-hsch.onrender.com/api/tables/cluster?circleId=${formData.circle}`
         );
         setClusters(clusterRes.data || []);
         setFormData((prev) => ({ ...prev, cluster: "" }));
@@ -104,7 +104,7 @@ const AddTable = () => {
       setClusters([]);
     } else {
       // Reload clients when switching back to branch or circle or cluster
-      axios.get("http://localhost:8888/api/tables/client").then((res) => {
+      axios.get("https://first-project-hsch.onrender.com/api/tables/client").then((res) => {
         setClients(res.data || []);
       });
     }
@@ -193,7 +193,7 @@ const AddTable = () => {
         formDataFile.append("table", selectedTable);
 
         const response = await axios.post(
-          "http://localhost:8888/api/upload-file",
+          "https://first-project-hsch.onrender.com/api/upload-file",
           formDataFile,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -297,7 +297,7 @@ const AddTable = () => {
         delete dataToSend.confirm_password;
       }
 
-      const response = await axios.post("http://localhost:8888/api/add-entry", {
+      const response = await axios.post("https://first-project-hsch.onrender.com/api/add-entry", {
         table: selectedTable,
         data: dataToSend,
       });
