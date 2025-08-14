@@ -12,7 +12,16 @@ const AddTable = () => {
   const [clients, setClients] = useState([]);
   const [circles, setCircles] = useState([]);
   const [clusters, setClusters] = useState([]);
-
+const TABLE_NAME_MAP = {
+    user: "add_user",
+    branch: "branch",
+    vehicle: "vehicle",
+    custodian: "custodian",
+    driver: "driver",
+    cluster: "cluster",
+    circle: "circle",
+    client: "client",
+  };
   // Fetch clients initially (for branch, circle tables)
   useEffect(() => {
     const fetchClients = async () => {
@@ -45,7 +54,7 @@ const AddTable = () => {
       }
     };
 
-    if (selectedTable === "branch" || selectedTable === "circle") {
+    if (selectedTable === "branch" || selectedTable === "circle" || selectedTable === "cluster") {
       fetchCircles();
     }
   }, [formData.client, selectedTable]);
@@ -298,7 +307,7 @@ const AddTable = () => {
       }
 
       const response = await axios.post("https://first-project-hsch.onrender.com/api/add-entry", {
-        table: selectedTable,
+        table: TABLE_NAME_MAP[selectedTable], 
         data: dataToSend,
       });
 
