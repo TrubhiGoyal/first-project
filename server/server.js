@@ -350,13 +350,13 @@ app.get("/api/dropdowns", async (req, res) => {
     const Vehicle = require("./models/vehicle");
     const Custodian = require("./models/custodian");
     const Driver = require("./models/driver");
-    const Branch = require("./models/branch2");
+    const Branch = require("./models/branch");
 
     const vehicles = await Vehicle.find().select("name -_id").lean();
     const custodians = await Custodian.find().select("name -_id").lean();
     const drivers = await Driver.find().select("name -_id").lean();
-    const branchesRaw = await Branch.find({}, "sol_id branch_name city circle bank_name").lean();
-
+   const branchCollection = mongoose.connection.collection("branch2");
+    const branchesRaw = await branchCollection.find({}).toArray();
     // ✅ Map branch data to the format expected by KMSForm.jsx
     const branches = branchesRaw.map(b => ({
       sol_id: b.sol_id,
