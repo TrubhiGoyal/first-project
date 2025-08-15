@@ -355,7 +355,7 @@ app.get("/api/dropdowns", async (req, res) => {
     const vehicles = await Vehicle.find().select("name -_id").lean();
     const custodians = await Custodian.find().select("name -_id").lean();
     const drivers = await Driver.find().select("name -_id").lean();
-    const branchesRaw = await Branch.find().lean();
+    const branchesRaw = await Branch.find({}, "sol_id branch_name city circle bank_name").lean();
 
     // ✅ Map branch data to the format expected by KMSForm.jsx
     const branches = branchesRaw.map(b => ({
