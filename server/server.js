@@ -1,4 +1,4 @@
-require("dotenv").config(); // server.js (MongoDB version)
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -11,48 +11,40 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 8888;
 
-// Allowed frontend URLs
+// Allowed frontend origins
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "https://kms-project.netlify.app"
 ];
 
-// CORS configuration
+// CORS setup
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-    if (!origin) return callback(null, true);
-
+    if (!origin) return callback(null, true); // server-to-server or curl
     if (ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true); // Allow this origin
+      callback(null, true);
     } else {
       callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true // Allow cookies if needed
+  credentials: true
 };
 
-// Apply CORS middleware globally
 app.use(cors(corsOptions));
-
-// Handle preflight requests for all routes
 app.options("*", cors(corsOptions));
-
-// Body parser
 app.use(express.json());
 
 // MongoDB connection
 mongoose.connect(process.env.url, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
+  useUnifiedTopology: true
 });
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 db.once("open", () => console.log("✅ Connected to MongoDB"));
-
 // Mongoose Models
 const User = require("./models/add_user");
 const Vehicle = require("./models/vehicle");
