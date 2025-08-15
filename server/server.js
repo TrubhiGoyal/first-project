@@ -350,7 +350,7 @@ app.get("/api/dropdowns", async (req, res) => {
     const Vehicle = require("./models/vehicle");
     const Custodian = require("./models/custodian");
     const Driver = require("./models/driver");
-    const Branch = require("./models/branch");
+    const Branch = require("./models/branch2");
 
     const vehicles = await Vehicle.find().select("name -_id").lean();
     const custodians = await Custodian.find().select("name -_id").lean();
