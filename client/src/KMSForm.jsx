@@ -76,64 +76,89 @@ const KMSForm = ({ onCancel }) => {
   };
 
   const handleSave = async () => {
-    try {
-      const tripId = entry.trip_id;
-      if (!tripId) return alert("Trip ID is missing.");
+  try {
+    const tripId = entry.trip_id;
+    if (!tripId) {
+      alert("Trip ID is missing. Please select vehicle and activity date.");
+      return;
+    }
 
-      const res = await axios.get(`https://first-project-hsch.onrender.com/api/kms-report/count?trip_id=${tripId}`);
-      const currentCount = res.data.count || 0;
-      const newCount = currentCount + entry.branches.filter(b => b.branch_name).length;
+    // Step 1: Get existing trip count
+    const countRes = await axios.get(
+      `https://first-project-hsch.onrender.com/api/kms-report/count?trip_id=${tripId}`
+    );
+    const currentCount = countRes.data.count || 0;
+    const newCount = currentCount + entry.branches.filter(b => b.branch_name).length;
 
-      const branchKms = (parseFloat(entry.trip_kms || 0) / newCount).toFixed(2);
+    // Step 2: Calculate branch KMs
+    const branchKms = (parseFloat(entry.trip_kms || 0) / newCount).toFixed(2);
 
-      const rows = entry.branches
-        .filter(b => b.branch_name)
-        .map(b => ({
-          data_entry_date: entry.data_entry_date,
-          vehicle_id: entry.vehicle_id,
-          activity_date: entry.activity_date,
-          trip_id: entry.trip_id,
-          custodian_name: entry.custodian_name,
-          driver_name: entry.driver_name,
-          branch_name: b.branch_name,
-          sol_id: b.sol_id,
-          cluster: b.cluster,
-          circle: b.circle,
-          client: b.client,
-          trip_retrieval_count: entry.trip_retrieval_count,
-          trip_fresh_pickup_count: entry.trip_fresh_pickup_count,
-          trip_return_retrieval_count: entry.trip_return_retrieval_count,
-          trip_empty_boxes_delivered_count: entry.trip_empty_boxes_delivered_count,
-          trip_opening_kms: entry.trip_opening_kms,
-          trip_closing_kms: entry.trip_closing_kms,
-          trip_kms: entry.trip_kms,
-          remarks: entry.remarks,
-          trip_branch_count: newCount,
-          branch_kms: branchKms,
-          transaction_id: `${entry.trip_id}/${b.sol_id}`
-        }));
+    // Step 3: Build rows for saving
+    const rows = entry.branches
+      .filter(b => b.branch_name)
+      .map(b => ({
+        data_entry_date: entry.data_entry_date,
+        vehicle_id: entry.vehicle_id,
+        activity_date: entry.activity_date,
+        trip_id: entry.trip_id,
+        custodian_name: entry.custodian_name,
+        driver_name: entry.driver_name,
+        branch_name: b.branch_name,
+        sol_id: b.sol_id,
+        cluster: b.cluster,
+        circle: b.circle,
+        client: b.client,
+        trip_retrieval_count: entry.trip_retrieval_count,
+        trip_fresh_pickup_count: entry.trip_fresh_pickup_count,
+        trip_return_retrieval_count: entry.trip_return_retrieval_count,
+        trip_empty_boxes_delivered_count: entry.trip_empty_boxes_delivered_count,
+        trip_opening_kms: entry.trip_opening_kms,
+        trip_closing_kms: entry.trip_closing_kms,
+        trip_kms: entry.trip_kms,
+        remarks: entry.remarks,
+        trip_branch_count: newCount,
+        branch_kms: branchKms,
+        transaction_id: `${entry.trip_id}/${b.sol_id}`
+      }));
 
-      await axios.post("https://first-project-hsch.onrender.com/api/kms-report/bulk", rows);
-      if (res.data.success) {
-      const ids = res.data.insertedIds || [];
-      alert(`Saved ${res.data.inserted_count} entries successfully.\nInserted IDs:\n${ids.join("\n")}`);
+    if (rows.length === 0) {
+      alert("No branch selected. Please select at least one branch.");
+      return;
+    }
+
+    // Step 4: Save entries
+    const saveRes = await axios.post(
+      "https://first-project-hsch.onrender.com/api/kms-report/bulk",
+      rows
+    );
+
+    console.log("POST /bulk response:", saveRes.data);
+
+    // Step 5: Handle response
+    if (saveRes.data.success) {
+      const ids = saveRes.data.insertedIds || [];
+      alert(
+        `✅ Saved ${saveRes.data.inserted_count || ids.length} entries successfully!\n\nSaved Transaction IDs:\n${ids.join("\n")}`
+      );
       resetForm();
     } else {
-      alert("Failed to save entries. Please try again.");
+      alert(
+        `❌ Failed to save entries.\nReason: ${saveRes.data.message || "Unknown error"}`
+      );
     }
   } catch (error) {
     console.error("Save failed:", error);
 
-    let message = "Failed to save.";
-    if (error.response && error.response.data && error.response.data.message) {
-      message = error.response.data.message;
+    let message = "Failed to save entries.";
+    if (error.response?.data?.message) {
+      message = error.response.data.message; // Backend-provided error
     } else if (error.message) {
-      message = error.message;
+      message = error.message; // Network or Axios error
     }
 
-    alert(message);
+    alert(`❌ ${message}`);
   }
-  };
+};
 
   return (
     <div style={{ padding: 20 }}>
