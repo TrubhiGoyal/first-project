@@ -10,9 +10,17 @@ const path = require("path");
 
 const app = express();
 const PORT = 8888;
-app.use(cors());
+app.use(cors({
+  origin: "https://kms-project.netlify.app", // your frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
-
+app.options("*", cors({
+  origin: "https://kms-project.netlify.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 // MongoDB connection
 mongoose.connect(process.env.url, {
   useNewUrlParser: true,
