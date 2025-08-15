@@ -9,29 +9,40 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = 8888;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const PORT = process.env.PORT || 8888;
 
+// Allowed frontend URLs
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://kms-project.netlify.app"
+];
+
+// CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
     if (!origin) return callback(null, true);
 
-    if (origin === FRONTEND_URL) {
-      callback(null, true); // allow this origin
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true); // Allow this origin
     } else {
-      callback(new Error("Not allowed by CORS")); // block other origins
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // allow cookies if needed
+  credentials: true // Allow cookies if needed
 };
 
+// Apply CORS middleware globally
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // handle preflight
 
+// Handle preflight requests for all routes
+app.options("*", cors(corsOptions));
+
+// Body parser
 app.use(express.json());
+
 // MongoDB connection
 mongoose.connect(process.env.url, {
   useNewUrlParser: true,
