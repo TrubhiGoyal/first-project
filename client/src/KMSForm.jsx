@@ -188,7 +188,11 @@ const KMSForm = ({ onCancel }) => {
                 <td>
                   <select value={b.branch_name} onChange={(e) => handleBranchChange(i, e.target.value)}>
                     <option value="">Select</option>
-                    {dropdowns.branches.map(branch => <option key={branch.branch_name}>{branch.branch_name}</option>)}
+                    {dropdowns.branches.map(branch => (
+  <option key={branch.sol_id} value={branch.branch_name}>
+    {branch.branch_name}
+  </option>
+))}
                   </select>
                 </td>
                 <td><input value={b.sol_id} disabled /></td>
