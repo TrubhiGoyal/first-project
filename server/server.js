@@ -9,31 +9,13 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 8888;
+const corsOption ={
+    origin:"https://kms-project.netlify.app",
+    methods: "GET, PUT, PATCH, DELETE, POST, HEAD",
+    credentials:true
+}
 
-// Allowed frontend origins
-const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "https://kms-project.netlify.app"
-];
-
-// CORS setup
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // server-to-server or curl
-    if (ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`Not allowed by CORS: ${origin}`));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-};
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.use(cors(corsOption));
 app.use(express.json());
 
 // MongoDB connection
