@@ -10,17 +10,28 @@ const path = require("path");
 
 const app = express();
 const PORT = 8888;
-app.use(cors({
-  origin: "https://kms-project.netlify.app", // your frontend URL
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+
+    if (origin === FRONTEND_URL) {
+      callback(null, true); // allow this origin
+    } else {
+      callback(new Error("Not allowed by CORS")); // block other origins
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // allow cookies if needed
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // handle preflight
+
 app.use(express.json());
-app.options("*", cors({
-  origin: "https://kms-project.netlify.app",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
 // MongoDB connection
 mongoose.connect(process.env.url, {
   useNewUrlParser: true,
