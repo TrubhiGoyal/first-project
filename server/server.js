@@ -477,10 +477,9 @@ app.post("/api/delete", async (req, res) => {
     custodian: "custodian",
     driver: "driver",
     kms_report: "kms_report",
-    activity_report: "activity_report",
+    activity_report: "activity_report"
   };
 
-  // Model mapping
   const ModelMap = {
     cluster: require("./models/cluster"),
     circle: require("./models/circle"),
@@ -511,7 +510,7 @@ app.post("/api/delete", async (req, res) => {
         .populate({
           path: "circle",
           select: "name client",
-          populate: { path: "client", select: "name" },
+          populate: { path: "client", select: "name" }
         })
         .lean();
     } else if (name === "branch") {
@@ -531,7 +530,6 @@ app.post("/api/delete", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 app.get("/api/export-all", async (req, res) => {
   const workbook = XLSX.utils.book_new();
