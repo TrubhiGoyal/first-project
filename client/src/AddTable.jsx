@@ -84,7 +84,7 @@ const TABLE_NAME_MAP = {
   }, [formData.circle, selectedTable]);
 
   const UNIQUE_FIELDS = {
-    user: "email",
+    user: ["email", "name"],
     branch: "sol_id",
     vehicle: "name",
     custodian: "name",

@@ -257,7 +257,7 @@ app.post("/api/add-entry", async (req, res) => {
 
     // Check for duplicate fields (if needed)
     const uniqueFields = {
-      user: ["email"],
+      add_user: ["email", "name"],
       vehicle: ["name"],
       driver: ["name"],
       custodian: ["name"],
@@ -383,20 +383,39 @@ app.get("/api/dropdowns", async (req, res) => {
 });
 
 
+// Bulk Insert API with auto-increment s_no
 app.post("/api/kms-report/bulk", async (req, res) => {
   try {
-    const entries = req.body.map(e => ({
-      ...e,
-      data_entry_date: convertToDate(e.data_entry_date),
-      activity_date: convertToDate(e.activity_date)
-      
-    }));
+    // Get the last s_no in collection
+    const lastEntry = await KmsReport.findOne().sort({ s_no: -1 });
+    let currentSNo = lastEntry ? lastEntry.s_no : 0;
+
+    // Prepare entries with incremented s_no
+    const entries = req.body.map(e => {
+      currentSNo++;
+      return {
+        ...e,
+        s_no: currentSNo, // assign new serial number
+        data_entry_date: convertToDate(e.data_entry_date),
+        activity_date: convertToDate(e.activity_date),
+      };
+    });
+
     const inserted = await KmsReport.insertMany(entries);
-    res.json({ success: true, inserted_count: inserted.length, insertedIds: inserted.map(doc => doc._id) });
+
+    res.json({
+      success: true,
+      inserted_count: inserted.length,
+      s_no_list: inserted.map(doc => doc.s_no), // return assigned s_no
+      message: `Saved successfully with S.No(s): ${inserted.map(d => d.s_no).join(", ")}`
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Bulk Save Error:", err);
+    res.status(500).json({ error: "Failed to save KMS Report entries", details: err.message });
   }
 });
+
 app.get("/api/kms-report/count", async (req, res) => {
   try {
     const { trip_id } = req.query;
@@ -447,7 +466,8 @@ app.post("/api/delete", async (req, res) => {
   
   app.get("/api/tables/:name", async (req, res) => {
   const { name } = req.params;
-const collectionMap = {
+
+  const collectionMap = {
     cluster: "clusters",
     circle: "circles",
     client: "clients",
@@ -470,7 +490,7 @@ const collectionMap = {
     custodian: require("./models/custodian"),
     driver: require("./models/driver"),
     kms_report: require("./models/kms_report.models"),
-    
+    activity_report: require("./models/activity_report.models"),
   };
 
   const Model = ModelMap[name];
@@ -480,17 +500,26 @@ const collectionMap = {
     let data;
 
     if (name === "circle") {
-      data = await Model.find().populate("client", "name").lean();
+      // Populate client name (instead of client id)
+      data = await Model.find()
+        .populate("client", "name")  // only return the name of client
+        .lean();
     } else if (name === "cluster") {
+      // Populate circle and inside it populate client name
       data = await Model.find()
         .populate({
           path: "circle",
           select: "name client",
-          populate: { path: "client", select: "name" },
+          populate: { path: "client", select: "name" }
         })
         .lean();
-    } else if (name === "client") {
-      data = await Model.find().lean();
+    } else if (name === "branch") {
+      // If branch also references cluster/circle/client
+      data = await Model.find()
+        .populate("cluster", "name")
+        .populate("circle", "name")
+        .populate("client", "name")
+        .lean();
     } else {
       data = await Model.find().lean();
     }
@@ -501,7 +530,6 @@ const collectionMap = {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 app.get("/api/export-all", async (req, res) => {
   const workbook = XLSX.utils.book_new();
