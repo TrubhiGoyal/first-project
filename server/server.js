@@ -467,25 +467,27 @@ app.post("/api/delete", async (req, res) => {
   app.get("/api/tables/:name", async (req, res) => {
   const { name } = req.params;
 
+  // Actual collection names
   const collectionMap = {
     cluster: "clusters",
     circle: "circles",
     client: "clients",
     user: "add_user",
-    branch: "branch2",
+    branch: "branch2", // ✅ your bank table
     vehicle: "vehicle",
     custodian: "custodian",
     driver: "driver",
     kms_report: "kms_report",
-    activity_report: "activity_report"
+    activity_report: "activity_report",
   };
 
+  // Model mapping
   const ModelMap = {
     cluster: require("./models/cluster"),
     circle: require("./models/circle"),
     client: require("./models/client"),
     user: require("./models/add_user"),
-    branch: require("./models/branch"),
+    branch: require("./models/branch"), // maps to branch2
     vehicle: require("./models/vehicle"),
     custodian: require("./models/custodian"),
     driver: require("./models/driver"),
@@ -500,27 +502,31 @@ app.post("/api/delete", async (req, res) => {
     let data;
 
     if (name === "circle") {
-      // Populate client name (instead of client id)
-      data = await Model.find()
-        .populate("client", "name")  // only return the name of client
-        .lean();
-    } else if (name === "cluster") {
-      // Populate circle and inside it populate client name
+      // ✅ Populate client name
+      data = await Model.find().populate("client", "name").lean();
+    } 
+    else if (name === "cluster") {
+      // ✅ Populate circle + client
       data = await Model.find()
         .populate({
           path: "circle",
           select: "name client",
-          populate: { path: "client", select: "name" }
+          populate: { path: "client", select: "name" },
         })
         .lean();
-    } else if (name === "branch") {
-      // If branch also references cluster/circle/client
+    } 
+    else if (name === "branch") {
+      // ✅ Populate circle + client (bank table)
       data = await Model.find()
-        .populate("cluster", "name")
-        .populate("circle", "name")
-        .populate("client", "name")
+        .populate({
+          path: "circle",
+          select: "name client",
+          populate: { path: "client", select: "name" },
+        })
         .lean();
-    } else {
+    } 
+    else {
+      // Default: return plain data
       data = await Model.find().lean();
     }
 
@@ -530,6 +536,7 @@ app.post("/api/delete", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 app.get("/api/export-all", async (req, res) => {
   const workbook = XLSX.utils.book_new();
