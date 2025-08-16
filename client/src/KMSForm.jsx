@@ -88,15 +88,18 @@ const KMSForm = ({ onCancel }) => {
       `https://first-project-hsch.onrender.com/api/kms-report/count?trip_id=${tripId}`
     );
     const currentCount = countRes.data.count || 0;
-    const newCount = currentCount + entry.branches.filter(b => b.branch_name).length;
+    const newCount =
+      currentCount + entry.branches.filter((b) => b.branch_name).length;
 
     // Step 2: Calculate branch KMs
-    const branchKms = (parseFloat(entry.trip_kms || 0) / newCount).toFixed(2);
+    const branchKms = (
+      parseFloat(entry.trip_kms || 0) / newCount
+    ).toFixed(2);
 
     // Step 3: Build rows for saving
     const rows = entry.branches
-      .filter(b => b.branch_name)
-      .map(b => ({
+      .filter((b) => b.branch_name)
+      .map((b) => ({
         data_entry_date: entry.data_entry_date,
         vehicle_id: entry.vehicle_id,
         activity_date: entry.activity_date,
@@ -111,14 +114,15 @@ const KMSForm = ({ onCancel }) => {
         trip_retrieval_count: entry.trip_retrieval_count,
         trip_fresh_pickup_count: entry.trip_fresh_pickup_count,
         trip_return_retrieval_count: entry.trip_return_retrieval_count,
-        trip_empty_boxes_delivered_count: entry.trip_empty_boxes_delivered_count,
+        trip_empty_boxes_delivered_count:
+          entry.trip_empty_boxes_delivered_count,
         trip_opening_kms: entry.trip_opening_kms,
         trip_closing_kms: entry.trip_closing_kms,
         trip_kms: entry.trip_kms,
         remarks: entry.remarks,
         trip_branch_count: newCount,
         branch_kms: branchKms,
-        transaction_id: `${entry.trip_id}/${b.sol_id}`
+        transaction_id: `${entry.trip_id}/${b.sol_id}`,
       }));
 
     if (rows.length === 0) {
@@ -136,29 +140,34 @@ const KMSForm = ({ onCancel }) => {
 
     // Step 5: Handle response
     if (saveRes.data.success) {
-      const ids = saveRes.data.insertedIds || [];
+      const serials = saveRes.data.serialNumbers || [];
       alert(
-        `✅ Saved ${saveRes.data.inserted_count || ids.length} entries successfully!\n\nSaved Transaction IDs:\n${ids.join("\n")}`
+        `✅ Saved ${saveRes.data.inserted_count} entries successfully!\n\nSaved S.No(s): ${serials.join(
+          ", "
+        )}`
       );
       resetForm();
     } else {
       alert(
-        `❌ Failed to save entries.\nReason: ${saveRes.data.message || "Unknown error"}`
+        `❌ Failed to save entries.\nReason: ${
+          saveRes.data.message || "Unknown error"
+        }`
       );
     }
   } catch (error) {
     console.error("Save failed:", error);
 
     let message = "Failed to save entries.";
-    if (error.response?.data?.message) {
-      message = error.response.data.message; // Backend-provided error
+    if (error.response?.data?.error) {
+      message = error.response.data.error; // backend error
     } else if (error.message) {
-      message = error.message; // Network or Axios error
+      message = error.message; // network/axios error
     }
 
     alert(`❌ ${message}`);
   }
 };
+
 
   return (
     <div style={{ padding: 20 }}>
