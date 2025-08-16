@@ -467,17 +467,18 @@ app.post("/api/delete", async (req, res) => {
   app.get("/api/tables/:name", async (req, res) => {
   const { name } = req.params;
 
+  // Map table name to actual MongoDB collection
   const collectionMap = {
     cluster: "clusters",
     circle: "circles",
     client: "clients",
     user: "add_user",
-    branch: "branch2",
+    branch: "branch2",  // ✅ branch points to branch2
     vehicle: "vehicle",
     custodian: "custodian",
     driver: "driver",
     kms_report: "kms_report",
-    activity_report: "activity_report"
+    activity_report: "activity_report",
   };
 
   const ModelMap = {
@@ -485,7 +486,7 @@ app.post("/api/delete", async (req, res) => {
     circle: require("./models/circle"),
     client: require("./models/client"),
     user: require("./models/add_user"),
-    branch: require("./models/branch"),
+    branch: require("./models/branch"),  // ✅ points to schema of branch, collection will be branch2
     vehicle: require("./models/vehicle"),
     custodian: require("./models/custodian"),
     driver: require("./models/driver"),
@@ -500,26 +501,45 @@ app.post("/api/delete", async (req, res) => {
     let data;
 
     if (name === "circle") {
-      // Populate client name (instead of client id)
+      // ✅ Populate client name instead of ObjectId
       data = await Model.find()
-        .populate("client", "name")  // only return the name of client
+        .populate("client", "name")
         .lean();
     } else if (name === "cluster") {
-      // Populate circle and inside it populate client name
+      // ✅ Populate circle name and inside that client name
       data = await Model.find()
         .populate({
           path: "circle",
           select: "name client",
-          populate: { path: "client", select: "name" }
+          populate: { path: "client", select: "name" },
         })
         .lean();
     } else if (name === "branch") {
-      // If branch also references cluster/circle/client
-      data = await Model.find()
-        .populate("cluster", "name")
-        .populate("circle", "name")
-        .populate("client", "name")
-        .lean();
+      // ✅ branch must use collection "branch2"
+      data = await mongoose.connection
+        .collection(collectionMap[name])
+        .find({})
+        .toArray();
+
+      // ✅ Replace ObjectIds with names (manual lookup)
+      const Circle = require("./models/circle");
+      const Cluster = require("./models/cluster");
+      const Client = require("./models/client");
+
+      for (let b of data) {
+        if (b.circle) {
+          const circle = await Circle.findById(b.circle).select("name");
+          b.circle = circle ? circle.name : b.circle;
+        }
+        if (b.cluster) {
+          const cluster = await Cluster.findById(b.cluster).select("name");
+          b.cluster = cluster ? cluster.name : b.cluster;
+        }
+        if (b.client) {
+          const client = await Client.findById(b.client).select("name");
+          b.client = client ? client.name : b.client;
+        }
+      }
     } else {
       data = await Model.find().lean();
     }
@@ -530,6 +550,7 @@ app.post("/api/delete", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 app.get("/api/export-all", async (req, res) => {
   const workbook = XLSX.utils.book_new();
